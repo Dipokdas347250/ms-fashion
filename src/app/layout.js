@@ -1,28 +1,29 @@
-import { Bebas_Neue, Geist } from "next/font/google";
+import { Baloo_Da_2, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const hind = Hind_Siliguri({
+  variable: "--font-hind",
+  weight: ["400", "500", "600", "700"],
+  subsets: ["bengali", "latin"],
 });
 
-const bebas = Bebas_Neue({
-  variable: "--font-bebas",
-  weight: "400",
-  subsets: ["latin"],
+const baloo = Baloo_Da_2({
+  variable: "--font-baloo",
+  weight: ["700", "800"],
+  subsets: ["bengali", "latin"],
 });
 
 export const metadata = {
-  title: "Any 3 T-Shirts for ৳990 | MS Fashion & Garments",
+  title: "যেকোনো ৩টি টি-শার্ট মাত্র ৳৯৯০ | এমএস ফ্যাশন অ্যান্ড গার্মেন্টস",
   description:
-    "Premium cotton T-shirts — pick any 3 for ৳990. Cash on delivery all over Bangladesh.",
+    "প্রিমিয়াম কটন টি-শার্ট — যেকোনো ৩টি মাত্র ৳৯৯০। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${bebas.variable} h-full scroll-smooth antialiased`}
+      lang="bn"
+      className={`${hind.variable} ${baloo.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

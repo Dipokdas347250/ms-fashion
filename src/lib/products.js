@@ -8,19 +8,30 @@ export const COMBO_SIZE = 3;
 export const COMBO_PRICE = 990;
 export const SINGLE_PRICE = 450;
 export const DELIVERY = {
-  inside: { label: "Inside Dhaka", fee: 70 },
-  outside: { label: "Outside Dhaka", fee: 130 },
+  inside: { label: "ঢাকার ভিতরে", fee: 70 },
+  outside: { label: "ঢাকার বাইরে", fee: 130 },
 };
 export const SIZES = ["M", "L", "XL", "XXL"];
 
+// Paste a YouTube link (watch, youtu.be or shorts) — shown at the top of the page.
+export const YOUTUBE_URL = "";
+
 // `position` crops one shirt out of the folded three-pack photo.
 export const PRODUCTS = [
-  { id: "love-navy", name: "#LOVE Print", color: "Navy", image: loveNavy },
-  { id: "royal-blue", name: "Classic Plain", color: "Royal Blue", image: royalBlue },
-  { id: "sky-tree", name: "Tree & Birds Print", color: "Sky Blue", image: skyTree },
-  { id: "maroon", name: "Premium Solid", color: "Maroon", image: solidPack, position: "8% 50%" },
-  { id: "sage", name: "Premium Solid", color: "Sage Green", image: solidPack, position: "50% 50%" },
-  { id: "navy", name: "Premium Solid", color: "Navy", image: solidPack, position: "92% 50%" },
+  { id: "love-navy", name: "#LOVE প্রিন্ট", color: "নেভি ব্লু", image: loveNavy },
+  { id: "royal-blue", name: "ক্লাসিক প্লেইন", color: "রয়েল ব্লু", image: royalBlue },
+  { id: "sky-tree", name: "গাছ ও পাখি প্রিন্ট", color: "স্কাই ব্লু", image: skyTree },
+  { id: "maroon", name: "প্রিমিয়াম সলিড", color: "মেরুন", image: solidPack, position: "8% 50%" },
+  { id: "sage", name: "প্রিমিয়াম সলিড", color: "সেজ গ্রিন", image: solidPack, position: "50% 50%" },
+  { id: "navy", name: "প্রিমিয়াম সলিড", color: "নেভি", image: solidPack, position: "92% 50%" },
 ];
 
-export const taka = (n) => `৳${n.toLocaleString("en-US")}`;
+const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
+
+// Bengali numerals, with thousands separators.
+export const bn = (n) =>
+  Number(n)
+    .toLocaleString("en-US")
+    .replace(/\d/g, (d) => BN_DIGITS[d]);
+
+export const taka = (n) => `৳${bn(n)}`;

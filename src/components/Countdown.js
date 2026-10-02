@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { bn } from "@/lib/products";
 
 // Counts down to local midnight, when the daily offer window resets.
 function remaining() {
@@ -23,16 +24,14 @@ export default function Countdown() {
 
   const parts = time ?? [0, 0, 0];
   return (
-    <div className="flex items-center gap-2" aria-label="Offer ends tonight">
-      {["Hours", "Minutes", "Seconds"].map((label, i) => (
+    <div className="flex items-center gap-2" aria-label="অফার আজ রাতেই শেষ">
+      {["ঘণ্টা", "মিনিট", "সেকেন্ড"].map((label, i) => (
         <div key={label} className="flex items-center gap-2">
           <div className="w-16 rounded-lg bg-white py-2 text-center text-black sm:w-20">
             <div className="font-display text-3xl leading-none tabular-nums sm:text-4xl">
-              {time ? String(parts[i]).padStart(2, "0") : "--"}
+              {time ? bn(String(parts[i]).padStart(2, "0")).padStart(2, "০") : "--"}
             </div>
-            <div className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
-              {label}
-            </div>
+            <div className="mt-1 text-xs font-semibold text-neutral-500">{label}</div>
           </div>
           {i < 2 && <span className="font-display text-3xl text-gold">:</span>}
         </div>
