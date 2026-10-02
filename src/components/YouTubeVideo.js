@@ -6,12 +6,29 @@ function videoId(url) {
 
 export default function YouTubeVideo({ url, title }) {
   const id = url ? videoId(url) : null;
+  const vertical = url?.includes("/shorts/");
+
+  // Browsers only allow autoplay when muted; viewers can tap to unmute.
+  // `loop` needs `playlist` set to the same ID to repeat a single video.
+  const params = new URLSearchParams({
+    autoplay: "1",
+    mute: "1",
+    loop: "1",
+    playlist: id ?? "",
+    playsinline: "1",
+    rel: "0",
+    modestbranding: "1",
+  });
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-neutral-800 shadow-2xl ring-1 ring-white/10">
+    <div
+      className={`relative mx-auto overflow-hidden rounded-2xl bg-neutral-800 shadow-2xl ring-1 ring-white/10 ${
+        vertical ? "aspect-9/16 w-full max-w-sm" : "aspect-video w-full"
+      }`}
+    >
       {id ? (
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`}
+          src={`https://www.youtube-nocookie.com/embed/${id}?${params}`}
           title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"

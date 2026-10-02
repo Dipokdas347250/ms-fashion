@@ -122,7 +122,7 @@ export default function Home() {
         </section>
 
         {/* Features */}
-        <section className="border-b border-neutral-200 bg-white">
+        {/* <section className="border-b border-neutral-200 bg-white">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px bg-neutral-200 md:grid-cols-4">
             {FEATURES.map((f) => (
               <div key={f.title} className="bg-white px-4 py-8 text-center sm:px-6">
@@ -134,7 +134,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* Collection */}
         <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
@@ -228,7 +228,7 @@ export default function Home() {
         </section>
 
         {/* FAQ */}
-        <section className="mx-auto max-w-3xl px-4 py-16 md:py-20">
+        {/* <section className="mx-auto max-w-3xl px-4 py-16 md:py-20">
           <SectionHeading eyebrow="প্রশ্ন ও উত্তর" title="জেনে রাখুন" />
           <div className="mt-8 divide-y divide-neutral-200 rounded-2xl bg-white ring-1 ring-neutral-200">
             {FAQS.map((f) => (
@@ -241,7 +241,7 @@ export default function Home() {
               </details>
             ))}
           </div>
-        </section>
+        </section> */}
       </main>
 
       <footer className="bg-black px-4 pb-24 pt-10 text-center text-sm text-neutral-400 md:pb-10">
