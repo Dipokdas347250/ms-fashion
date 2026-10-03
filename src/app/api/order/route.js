@@ -1,6 +1,10 @@
-import { COMBO_PRICE, COMBO_SIZE, DELIVERY, PRODUCTS, SIZES, bn } from "@/lib/products";
+import { COMBO_SIZE, DELIVERY, PRODUCTS, SIZES, bn } from "@/lib/products";
+
+// Express backend (server/). Server-only, so the browser never sees it.
+const API_URL = process.env.API_URL || "http://localhost:5000";
 
 const productIds = new Set(PRODUCTS.map((p) => p.id));
+const SERVER_ERROR = "কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।";
 
 export async function POST(request) {
   let body;
@@ -32,11 +36,27 @@ export async function POST(request) {
     return Response.json({ error: `সাইজসহ ${bn(COMBO_SIZE)}টি টি-শার্ট বাছুন।` }, { status: 400 });
   }
 
-  const total = COMBO_PRICE + DELIVERY[area].fee;
-  const orderId = `MS-${Date.now().toString(36).toUpperCase()}`;
+  // The backend re-validates everything and calculates the real total from its own prices.
+  const headers = { "Content-Type": "application/json" };
+  const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0].trim();
+  if (clientIp) headers["X-Forwarded-For"] = clientIp; // so rate limiting is per customer
 
-  // TODO: save the order (Google Sheet, database, courier API, email…).
-  console.log("New order", { orderId, name, phone, address, area, items, total });
+  let res, data;
+  try {
+    res = await fetch(`${API_URL}/api/orders`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ name, phone, address, area, items }),
+      signal: AbortSignal.timeout(20000),
+    });
+    data = await res.json();
+  } catch (err) {
+    console.error("Order API unreachable:", err);
+    return Response.json({ error: SERVER_ERROR }, { status: 502 });
+  }
 
-  return Response.json({ orderId, total });
+  if (!res.ok || !data.success) {
+    return Response.json({ error: data.error || SERVER_ERROR }, { status: res.status >= 400 ? res.status : 502 });
+  }
+  return Response.json({ orderId: data.data.orderId, total: data.data.total });
 }

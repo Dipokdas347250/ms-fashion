@@ -1,5 +1,5 @@
 import Image from "next/image";
-import royalBlue from "@/assets/royal-blue.jpg";
+import royalBlue from "@/assets/new2.jpg";
 import solidPack from "@/assets/solid-pack.jpg";
 import Countdown from "@/components/Countdown";
 import OrderForm from "@/components/OrderForm";
@@ -137,7 +137,7 @@ export default function Home() {
         </section> */}
 
         {/* Collection */}
-        <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+        {/* <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
           <SectionHeading eyebrow="আমাদের কালেকশন" title="আপনার পছন্দের টি-শার্ট" />
           <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
             {PRODUCTS.map((p) => (
@@ -170,11 +170,11 @@ export default function Home() {
               যেকোনো {bn(COMBO_SIZE)}টি নিন মাত্র {taka(COMBO_PRICE)}-এ
             </a>
           </div>
-        </section>
+        </section> */}
 
         {/* Size chart */}
         <section className="bg-white py-16 md:py-20">
-          <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
+          <div className="mx-auto  max-w-6xl items-center gap-10 px-4 ">
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-neutral-200">
               <Image
                 src={royalBlue}
@@ -184,30 +184,7 @@ export default function Home() {
                 className="object-cover"
               />
             </div>
-            <div>
-              <SectionHeading eyebrow="সঠিক মাপ বেছে নিন" title="সাইজ চার্ট" align="left" />
-              <table className="mt-8 w-full overflow-hidden rounded-xl text-center ring-1 ring-neutral-200">
-                <thead className="bg-black text-sm text-white">
-                  <tr>
-                    <th className="py-3">সাইজ</th>
-                    <th className="py-3">বুক (চেস্ট)</th>
-                    <th className="py-3">লম্বা (লেংথ)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SIZE_ROWS.map(([s, chest, length]) => (
-                    <tr key={s} className="border-t border-neutral-200 even:bg-neutral-50">
-                      <td className="py-3 text-2xl font-bold">{s}</td>
-                      <td className="py-3 font-semibold">{bn(chest)} ইঞ্চি</td>
-                      <td className="py-3 font-semibold">{bn(length)} ইঞ্চি</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="mt-3 text-sm text-neutral-500">
-                সব মাপ ইঞ্চিতে। হাতে মাপার কারণে ১–২ ইঞ্চি কম-বেশি হতে পারে।
-              </p>
-            </div>
+           
           </div>
         </section>
 
