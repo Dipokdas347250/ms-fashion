@@ -5,7 +5,7 @@ import solidPack from "@/assets/solid-pack.jpg";
 
 // Edit prices here — every section of the page reads from these values.
 export const COMBO_SIZE = 3;
-export const COMBO_PRICE = 990;
+export const COMBO_PRICE = 999;
 export const SINGLE_PRICE = 450;
 export const DELIVERY = {
   inside: { label: "ঢাকার ভিতরে", fee: 70 },

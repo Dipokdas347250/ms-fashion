@@ -70,7 +70,7 @@ export default async function Home() {
           <section className="bg-neutral-950 px-4 pt-10 text-white md:pt-14">
             <div className="mx-auto max-w-4xl">
               <h2 className="mb-6 text-center font-display text-3xl leading-tight md:text-4xl">
-                ভিডিওতে দেখে নিন আমাদের <span className="text-gold">টি-শার্ট</span>
+                মাত্র ৯৯৯ টাকায় ৩টি , <span className="text-gold"> টি-শার্ট কম্বো</span>
               </h2>
               <YouTubeVideo url={mainVideo.url} title={mainVideo.title || VIDEO_TITLE} />
               {moreVideos.length > 0 && (
@@ -92,9 +92,9 @@ export default async function Home() {
                 🔥 কম্বো অফার
               </span>
               <h1 className="mt-5 font-display text-5xl leading-tight sm:text-6xl lg:text-7xl">
-                যেকোনো {bn(COMBO_SIZE)}টি টি-শার্ট
+                নিচের {bn(COMBO_SIZE)}টি টি-শার্ট
                 <br />
-                <span className="text-gold">মাত্র {taka(COMBO_PRICE)}</span>
+                <span className="text-gold">পাচ্ছেন কম্বো অফারে </span>
               </h1>
               <p className="mt-5 max-w-md text-lg text-neutral-300">
                 প্রিমিয়াম কটন কালেকশন থেকে পছন্দমতো বেছে নিন। নিয়মিত দাম{" "}
