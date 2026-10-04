@@ -1,9 +1,7 @@
-import { COMBO_SIZE, DELIVERY, PRODUCTS, SIZES, bn } from "@/lib/products";
+import { cookies } from "next/headers";
+import { API_URL } from "@/lib/api";
+import { COMBO_SIZE, DELIVERY, SIZES, bn } from "@/lib/products";
 
-// Express backend (server/). Server-only, so the browser never sees it.
-const API_URL = process.env.API_URL || "http://localhost:5000";
-
-const productIds = new Set(PRODUCTS.map((p) => p.id));
 const SERVER_ERROR = "কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।";
 
 export async function POST(request) {
@@ -31,7 +29,8 @@ export async function POST(request) {
   if (
     !Array.isArray(items) ||
     items.length !== COMBO_SIZE ||
-    !items.every((it) => productIds.has(it?.productId) && SIZES.includes(it?.size))
+    // The API checks that each product exists, is visible and the size is in stock.
+    !items.every((it) => typeof it?.productId === "string" && it.productId && SIZES.includes(it?.size))
   ) {
     return Response.json({ error: `সাইজসহ ${bn(COMBO_SIZE)}টি টি-শার্ট বাছুন।` }, { status: 400 });
   }
@@ -41,12 +40,21 @@ export async function POST(request) {
   const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0].trim();
   if (clientIp) headers["X-Forwarded-For"] = clientIp; // so rate limiting is per customer
 
+  // Browser details for the Meta Conversions API (the _fbp/_fbc cookies are set by the pixel).
+  const cookieStore = await cookies();
+  const tracking = {
+    fbp: cookieStore.get("_fbp")?.value,
+    fbc: cookieStore.get("_fbc")?.value,
+    userAgent: request.headers.get("user-agent")?.slice(0, 500) || undefined,
+    sourceUrl: request.headers.get("referer")?.slice(0, 500) || undefined,
+  };
+
   let res, data;
   try {
     res = await fetch(`${API_URL}/api/orders`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ name, phone, address, area, items }),
+      body: JSON.stringify({ name, phone, address, area, items, tracking }),
       signal: AbortSignal.timeout(20000),
     });
     data = await res.json();

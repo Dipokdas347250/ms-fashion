@@ -6,27 +6,51 @@ import {
   COMBO_PRICE,
   COMBO_SIZE,
   DELIVERY,
-  PRODUCTS,
-  SINGLE_PRICE,
   SIZES,
   bn,
   taka,
 } from "@/lib/products";
+import { track } from "@/lib/pixel";
 
-const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+// Uploaded photos ("/uploads/…", served by the API) skip Next's optimizer; bundled imports use it.
+function ProductImage({ product, alt, ...props }) {
+  if (!product.image) {
+    return <div className="flex h-full w-full items-center justify-center text-3xl text-neutral-300">👕</div>;
+  }
+  return (
+    <Image
+      src={product.image}
+      alt={alt}
+      unoptimized={typeof product.image === "string"}
+      style={{ objectPosition: product.position ?? "center" }}
+      fill
+      {...props}
+    />
+  );
+}
 
-export default function OrderForm() {
+// `products` come from the API (see lib/api.js): { id, name, color, price, image, position, sizes }.
+export default function OrderForm({ products }) {
   const [items, setItems] = useState([]);
   const [area, setArea] = useState("inside");
   const [status, setStatus] = useState({ state: "idle" });
 
+  const byId = Object.fromEntries(products.map((p) => [p.id, p]));
   const full = items.length === COMBO_SIZE;
   const delivery = DELIVERY[area].fee;
-  const total = COMBO_PRICE + delivery;
+  // Same rule as the server: any 3 for the combo price, unless the shirts add up to less.
+  const regular = full
+    ? items.reduce((s, it) => s + (byId[it.productId]?.price || 0), 0)
+    : Math.max(0, ...products.map((p) => p.price)) * COMBO_SIZE;
+  const comboPrice = Math.min(COMBO_PRICE, regular);
+  const total = comboPrice + delivery;
 
   function add(productId) {
-    if (full) return;
-    setItems((prev) => [...prev, { productId, size: "L" }]);
+    const p = byId[productId];
+    const size = p.sizes.L ? "L" : SIZES.find((s) => p.sizes[s]);
+    if (full || !size) return;
+    setItems((prev) => [...prev, { productId, size }]);
+    track("AddToCart", { content_ids: [productId], content_type: "product", currency: "BDT", value: p.price });
   }
 
   function setSize(index, size) {
@@ -44,6 +68,8 @@ export default function OrderForm() {
       return;
     }
     const form = new FormData(e.currentTarget);
+    const contentIds = [...new Set(items.map((it) => it.productId))];
+    track("InitiateCheckout", { content_ids: contentIds, content_type: "product", currency: "BDT", value: total, num_items: COMBO_SIZE });
     setStatus({ state: "sending" });
     try {
       const res = await fetch("/api/order", {
@@ -59,6 +85,12 @@ export default function OrderForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।");
+      // Same event ID as the server's Conversions API event, so Meta counts the sale once.
+      track(
+        "Purchase",
+        { content_ids: contentIds, content_type: "product", currency: "BDT", value: data.total, num_items: COMBO_SIZE },
+        data.orderId,
+      );
       setStatus({ state: "done", orderId: data.orderId, total: data.total });
     } catch (err) {
       setStatus({ state: "error", message: err.message });
@@ -107,27 +139,31 @@ export default function OrderForm() {
         </p>
 
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {PRODUCTS.map((p) => {
+          {products.map((p) => {
             const count = items.filter((it) => it.productId === p.id).length;
+            const soldOut = !SIZES.some((s) => p.sizes[s]);
             return (
               <button
                 type="button"
                 key={p.id}
                 onClick={() => add(p.id)}
-                disabled={full}
+                disabled={full || soldOut}
                 className={`group relative overflow-hidden rounded-xl border-2 bg-white text-left transition ${
                   count ? "border-black" : "border-neutral-200 hover:border-neutral-400"
-                } disabled:cursor-not-allowed ${full && !count ? "opacity-50" : ""}`}
+                } disabled:cursor-not-allowed ${(full && !count) || soldOut ? "opacity-50" : ""}`}
               >
                 <div className="relative aspect-square bg-neutral-100">
-                  <Image
-                    src={p.image}
+                  <ProductImage
+                    product={p}
                     alt={`${p.name} — ${p.color}`}
-                    fill
                     sizes="(min-width: 1024px) 220px, (min-width: 640px) 30vw, 45vw"
                     className="object-cover transition duration-300 group-hover:scale-105"
-                    style={{ objectPosition: p.position ?? "center" }}
                   />
+                  {soldOut && (
+                    <span className="absolute inset-x-0 bottom-0 bg-black/70 py-1 text-center text-xs font-bold text-white">
+                      স্টক শেষ
+                    </span>
+                  )}
                   {count > 0 && (
                     <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black text-sm font-bold text-gold">
                       ×{bn(count)}
@@ -164,14 +200,7 @@ export default function OrderForm() {
                 className="flex flex-wrap items-center gap-3 rounded-xl border border-neutral-200 bg-white p-2"
               >
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                  <Image
-                    src={p.image}
-                    alt=""
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                    style={{ objectPosition: p.position ?? "center" }}
-                  />
+                  <ProductImage product={p} alt="" sizes="48px" className="object-cover" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold">{p.name}</div>
@@ -184,8 +213,10 @@ export default function OrderForm() {
                       key={s}
                       role="radio"
                       aria-checked={it.size === s}
+                      disabled={!p.sizes[s]}
+                      title={p.sizes[s] ? undefined : "এই সাইজ স্টকে নেই"}
                       onClick={() => setSize(i, s)}
-                      className={`h-9 min-w-10 rounded-md px-2 text-xs font-bold transition ${
+                      className={`h-9 min-w-10 rounded-md px-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:text-neutral-300 disabled:line-through ${
                         it.size === s
                           ? "bg-black text-white"
                           : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
@@ -270,9 +301,9 @@ export default function OrderForm() {
 
           <div className="mt-5 space-y-2 border-t border-dashed border-neutral-300 pt-4 text-sm">
             <Row label={`${bn(COMBO_SIZE)}টি টি-শার্ট (নিয়মিত দাম)`}>
-              <span className="text-neutral-400 line-through">{taka(SINGLE_PRICE * COMBO_SIZE)}</span>
+              <span className="text-neutral-400 line-through">{taka(regular)}</span>
             </Row>
-            <Row label="কম্বো অফার মূল্য">{taka(COMBO_PRICE)}</Row>
+            <Row label="কম্বো অফার মূল্য">{taka(comboPrice)}</Row>
             <Row label="ডেলিভারি চার্জ">{taka(delivery)}</Row>
             <div className="flex items-center justify-between border-t border-neutral-200 pt-3 text-base font-bold">
               <span>সর্বমোট</span>

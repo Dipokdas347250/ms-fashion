@@ -4,20 +4,18 @@ import solidPack from "@/assets/solid-pack.jpg";
 import Countdown from "@/components/Countdown";
 import OrderForm from "@/components/OrderForm";
 import YouTubeVideo from "@/components/YouTubeVideo";
+import { getProducts, getVideos } from "@/lib/api";
 import {
   COMBO_PRICE,
   COMBO_SIZE,
   DELIVERY,
-  PRODUCTS,
   SINGLE_PRICE,
   SIZES,
-  YOUTUBE_URL,
   bn,
   taka,
 } from "@/lib/products";
 
-const REGULAR = SINGLE_PRICE * COMBO_SIZE;
-const SAVE = REGULAR - COMBO_PRICE;
+const VIDEO_TITLE = "এমএস ফ্যাশন — টি-শার্ট কালেকশন";
 
 const FEATURES = [
   { icon: "👕", title: "প্রিমিয়াম কোয়ালিটি", text: "১০০% নরম কম্বড কটন — বারবার ধোয়ার পরও আকৃতি ঠিক থাকে।" },
@@ -52,7 +50,12 @@ const FAQS = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const [products, [mainVideo, ...moreVideos] = []] = await Promise.all([getProducts(), getVideos()]);
+  // "Regular price" for the offer banner: three of the priciest shirt.
+  const REGULAR = (Math.max(0, ...products.map((p) => p.price)) || SINGLE_PRICE) * COMBO_SIZE;
+  const SAVE = REGULAR - COMBO_PRICE;
+
   return (
     <>
       {/* Announcement bar */}
@@ -62,15 +65,24 @@ export default function Home() {
       </div>
 
       <main className="flex-1">
-        {/* Video */}
-        <section className="bg-neutral-950 px-4 pt-10 text-white md:pt-14">
-          <div className="mx-auto max-w-4xl">
-            <h2 className="mb-6 text-center font-display text-3xl leading-tight md:text-4xl">
-              ভিডিওতে দেখে নিন আমাদের <span className="text-gold">টি-শার্ট</span>
-            </h2>
-            <YouTubeVideo url={YOUTUBE_URL} title="এমএস ফ্যাশন — টি-শার্ট কালেকশন" />
-          </div>
-        </section>
+        {/* Videos (managed in the dashboard → Videos). The first one autoplays muted. */}
+        {mainVideo && (
+          <section className="bg-neutral-950 px-4 pt-10 text-white md:pt-14">
+            <div className="mx-auto max-w-4xl">
+              <h2 className="mb-6 text-center font-display text-3xl leading-tight md:text-4xl">
+                ভিডিওতে দেখে নিন আমাদের <span className="text-gold">টি-শার্ট</span>
+              </h2>
+              <YouTubeVideo url={mainVideo.url} title={mainVideo.title || VIDEO_TITLE} />
+              {moreVideos.length > 0 && (
+                <div className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {moreVideos.map((v) => (
+                    <YouTubeVideo key={v.id} url={v.url} title={v.title || VIDEO_TITLE} autoplay={false} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Offer hero */}
         <section className="relative overflow-hidden bg-neutral-950 text-white">
@@ -140,7 +152,7 @@ export default function Home() {
         {/* <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
           <SectionHeading eyebrow="আমাদের কালেকশন" title="আপনার পছন্দের টি-শার্ট" />
           <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
-            {PRODUCTS.map((p) => (
+            {products.map((p) => (
               <div key={p.id} className="group overflow-hidden rounded-2xl bg-white ring-1 ring-neutral-200">
                 <div className="relative aspect-square overflow-hidden bg-neutral-100">
                   <Image
@@ -199,7 +211,7 @@ export default function Home() {
               নিচের ফর্মটি পূরণ করুন — কোনো অগ্রিম টাকা লাগবে না। পাঠানোর আগে আমরা কল করে কনফার্ম করব।
             </p>
             <div className="mt-10">
-              <OrderForm />
+              <OrderForm products={products} />
             </div>
           </div>
         </section>

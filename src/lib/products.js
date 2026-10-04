@@ -13,7 +13,7 @@ export const DELIVERY = {
 };
 export const SIZES = ["M", "L", "XL", "XXL"];
 
-// Paste a YouTube link (watch, youtu.be or shorts) — shown at the top of the page.
+// Fallback video, shown only if the API is down. Manage the real videos in the dashboard → Videos.
 export const YOUTUBE_URL = "https://youtube.com/shorts/9kgAlgIJcxE?si=I2lvXF0H6t3w1cB4";
 
 // `position` crops one shirt out of the folded three-pack photo.

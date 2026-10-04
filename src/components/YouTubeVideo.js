@@ -4,17 +4,14 @@ function videoId(url) {
   return match?.[1] ?? (/^[\w-]{11}$/.test(url) ? url : null);
 }
 
-export default function YouTubeVideo({ url, title }) {
+export default function YouTubeVideo({ url, title, autoplay = true }) {
   const id = url ? videoId(url) : null;
   const vertical = url?.includes("/shorts/");
 
   // Browsers only allow autoplay when muted; viewers can tap to unmute.
   // `loop` needs `playlist` set to the same ID to repeat a single video.
   const params = new URLSearchParams({
-    autoplay: "1",
-    mute: "1",
-    loop: "1",
-    playlist: id ?? "",
+    ...(autoplay ? { autoplay: "1", mute: "1", loop: "1", playlist: id ?? "" } : {}),
     playsinline: "1",
     rel: "0",
     modestbranding: "1",
@@ -30,6 +27,7 @@ export default function YouTubeVideo({ url, title }) {
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${id}?${params}`}
           title={title}
+          loading={autoplay ? undefined : "lazy"}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
