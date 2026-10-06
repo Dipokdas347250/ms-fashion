@@ -4,7 +4,7 @@ import solidPack from "@/assets/solid-pack.jpg";
 import Countdown from "@/components/Countdown";
 import OrderForm from "@/components/OrderForm";
 import YouTubeVideo from "@/components/YouTubeVideo";
-import { getProducts, getVideos } from "@/lib/api";
+import { getProducts } from "@/lib/api";
 import {
   COMBO_PRICE,
   COMBO_SIZE,
@@ -16,6 +16,9 @@ import {
 } from "@/lib/products";
 
 const VIDEO_TITLE = "এমএস ফ্যাশন — টি-শার্ট কালেকশন";
+
+// YouTube videos shown at the top of the page. Add more links to show them below the first.
+const VIDEOS = ["https://youtube.com/shorts/f83YtDC6trc?si=Rl2xwukrHZmjsphI"];
 
 const FEATURES = [
   { icon: "👕", title: "প্রিমিয়াম কোয়ালিটি", text: "১০০% নরম কম্বড কটন — বারবার ধোয়ার পরও আকৃতি ঠিক থাকে।" },
@@ -51,10 +54,13 @@ const FAQS = [
 ];
 
 export default async function Home() {
-  const [products, [mainVideo, ...moreVideos] = []] = await Promise.all([getProducts(), getVideos()]);
-  // "Regular price" for the offer banner: three of the priciest shirt.
-  const REGULAR = (Math.max(0, ...products.map((p) => p.price)) || SINGLE_PRICE) * COMBO_SIZE;
-  const SAVE = REGULAR - COMBO_PRICE;
+  const products = await getProducts();
+  // The page sells just one product: the first one in the dashboard.
+  const product = products[0];
+  const PRICE = product?.price || COMBO_PRICE;
+  // "Regular price" for the offer banner: three shirts at the single price.
+  const REGULAR = SINGLE_PRICE * COMBO_SIZE;
+  const SAVE = Math.max(0, REGULAR - PRICE);
 
   return (
     <>
@@ -65,18 +71,18 @@ export default async function Home() {
       </div>
 
       <main className="flex-1">
-        {/* Videos (managed in the dashboard → Videos). The first one autoplays muted. */}
-        {mainVideo && (
+        {/* Videos, set by hand in VIDEOS above. The first one autoplays muted. */}
+        {VIDEOS.length > 0 && (
           <section className="bg-neutral-950 px-4 pt-10 text-white md:pt-14">
             <div className="mx-auto max-w-4xl">
               <h2 className="mb-6 text-center font-display text-3xl leading-tight md:text-4xl">
                 মাত্র ৯৯৯ টাকায় ৩টি , <span className="text-gold"> টি-শার্ট কম্বো</span>
               </h2>
-              <YouTubeVideo url={mainVideo.url} title={mainVideo.title || VIDEO_TITLE} />
-              {moreVideos.length > 0 && (
+              <YouTubeVideo url={VIDEOS[0]} title={VIDEO_TITLE} />
+              {VIDEOS.length > 1 && (
                 <div className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {moreVideos.map((v) => (
-                    <YouTubeVideo key={v.id} url={v.url} title={v.title || VIDEO_TITLE} autoplay={false} />
+                  {VIDEOS.slice(1).map((url) => (
+                    <YouTubeVideo key={url} url={url} title={VIDEO_TITLE} autoplay={false} />
                   ))}
                 </div>
               )}
@@ -97,7 +103,7 @@ export default async function Home() {
                 <span className="text-gold">পাচ্ছেন কম্বো অফারে </span>
               </h1>
               <p className="mt-5 max-w-md text-lg text-neutral-300">
-                প্রিমিয়াম কটন কালেকশন থেকে পছন্দমতো বেছে নিন। নিয়মিত দাম{" "}
+                প্রিমিয়াম কটন কালেকশন {" "}
                 <span className="line-through">{taka(REGULAR)}</span> — আজই সাশ্রয় করুন{" "}
                 <strong className="text-white">{taka(SAVE)}</strong>।
               </p>
@@ -204,14 +210,14 @@ export default async function Home() {
         <section id="order" className="scroll-mt-4 bg-neutral-100 py-16 md:py-20">
           <div className="mx-auto max-w-6xl px-4">
             <SectionHeading
-              eyebrow={`${bn(COMBO_SIZE)}টি টি-শার্ট · ${taka(COMBO_PRICE)}`}
+              eyebrow={`${bn(COMBO_SIZE)}টি টি-শার্ট · ${taka(PRICE)}`}
               title="অর্ডার করুন"
             />
             <p className="mx-auto mt-3 max-w-lg text-center text-neutral-600">
               নিচের ফর্মটি পূরণ করুন — কোনো অগ্রিম টাকা লাগবে না। পাঠানোর আগে আমরা কল করে কনফার্ম করব।
             </p>
             <div className="mt-10">
-              <OrderForm products={products} />
+              <OrderForm product={product} />
             </div>
           </div>
         </section>
@@ -238,7 +244,13 @@ export default async function Home() {
           এমএস <span className="text-gold">ফ্যাশন</span> অ্যান্ড গার্মেন্টস
         </div>
         <p className="mt-1">স্টাইল আর আরামের মেলবন্ধন</p>
-        <p className="mt-6">
+        <p className="mt-4">
+          যোগাযোগ:{" "}
+          <a href="tel:+8801410675433" className="font-semibold text-white hover:text-gold">
+            📞 01410675433
+          </a>
+        </p>
+        <p className="mt-2">
           ডেলিভারি চার্জ: {DELIVERY.inside.label} {taka(DELIVERY.inside.fee)} · {DELIVERY.outside.label}{" "}
           {taka(DELIVERY.outside.fee)}
         </p>
@@ -249,7 +261,7 @@ export default async function Home() {
       <div className="fixed inset-x-0 bottom-0 z-50 flex items-center gap-3 border-t border-neutral-200 bg-white/95 p-3 backdrop-blur md:hidden">
         <div className="leading-tight">
           <div className="text-xs text-neutral-500 line-through">{taka(REGULAR)}</div>
-          <div className="font-display text-2xl">{taka(COMBO_PRICE)}</div>
+          <div className="font-display text-2xl">{taka(PRICE)}</div>
         </div>
         <a href="#order" className="flex-1 rounded-xl bg-black py-3 text-center font-bold text-white">
           {bn(COMBO_SIZE)}টি টি-শার্ট অর্ডার করুন

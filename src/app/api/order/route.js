@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { API_URL } from "@/lib/api";
-import { COMBO_SIZE, DELIVERY, SIZES, bn } from "@/lib/products";
+import { DELIVERY, SIZES } from "@/lib/products";
 
 const SERVER_ERROR = "কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।";
 
@@ -28,11 +28,11 @@ export async function POST(request) {
   }
   if (
     !Array.isArray(items) ||
-    items.length !== COMBO_SIZE ||
-    // The API checks that each product exists, is visible and the size is in stock.
+    items.length !== 1 ||
+    // The API checks that the product exists, is visible and the size is in stock.
     !items.every((it) => typeof it?.productId === "string" && it.productId && SIZES.includes(it?.size))
   ) {
-    return Response.json({ error: `সাইজসহ ${bn(COMBO_SIZE)}টি টি-শার্ট বাছুন।` }, { status: 400 });
+    return Response.json({ error: "অর্ডারটি সঠিক নয়, পেজটি রিফ্রেশ করে আবার চেষ্টা করুন।" }, { status: 400 });
   }
 
   // The backend re-validates everything and calculates the real total from its own prices.
