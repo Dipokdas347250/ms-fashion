@@ -247,7 +247,8 @@ export default async function Home() {
 
       <footer className="bg-black px-4 pb-24 pt-10 text-center text-sm text-neutral-400 md:pb-10">
         <div className="font-display text-3xl text-white">
-          এমএস <span className="text-gold">ফ্যাশন</span> অ্যান্ড গার্মেন্টস
+          MS 
+ <span className="text-gold"> Fashion</span> And Garments
         </div>
         <p className="mt-1">স্টাইল আর আরামের মেলবন্ধন</p>
         <p className="mt-4">
