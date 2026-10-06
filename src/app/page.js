@@ -3,6 +3,7 @@ import royalBlue from "@/assets/new2.jpg";
 import solidPack from "@/assets/solid-pack.jpg";
 import Countdown from "@/components/Countdown";
 import OrderForm from "@/components/OrderForm";
+import LocalVideo from "@/components/LocalVideo";
 import YouTubeVideo from "@/components/YouTubeVideo";
 import { getProducts } from "@/lib/api";
 import {
@@ -17,8 +18,13 @@ import {
 
 const VIDEO_TITLE = "এমএস ফ্যাশন — টি-শার্ট কালেকশন";
 
-// YouTube videos shown at the top of the page. Add more links to show them below the first.
-const VIDEOS = ["https://youtube.com/shorts/f83YtDC6trc?si=Rl2xwukrHZmjsphI"];
+// Videos shown at the top of the page: YouTube links, or .mp4 files placed in /public.
+// Add more to show them below the first.
+const VIDEOS = ["/video.mp4"];
+
+function Video({ url, ...props }) {
+  return url.endsWith(".mp4") ? <LocalVideo src={url} {...props} /> : <YouTubeVideo url={url} {...props} />;
+}
 
 const FEATURES = [
   { icon: "👕", title: "প্রিমিয়াম কোয়ালিটি", text: "১০০% নরম কম্বড কটন — বারবার ধোয়ার পরও আকৃতি ঠিক থাকে।" },
@@ -78,11 +84,11 @@ export default async function Home() {
               <h2 className="mb-6 text-center font-display text-3xl leading-tight md:text-4xl">
                 মাত্র ৯৯৯ টাকায় ৩টি , <span className="text-gold"> টি-শার্ট কম্বো</span>
               </h2>
-              <YouTubeVideo url={VIDEOS[0]} title={VIDEO_TITLE} />
+              <Video url={VIDEOS[0]} title={VIDEO_TITLE} />
               {VIDEOS.length > 1 && (
                 <div className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {VIDEOS.slice(1).map((url) => (
-                    <YouTubeVideo key={url} url={url} title={VIDEO_TITLE} autoplay={false} />
+                    <Video key={url} url={url} title={VIDEO_TITLE} autoplay={false} />
                   ))}
                 </div>
               )}
