@@ -23,12 +23,14 @@ function ProductImage({ product, alt, ...props }) {
 }
 
 // `product` comes from the API (see lib/api.js): { id, name, color, price, image, position, sizes }.
-// One product, one unit — nothing to choose. The size defaults to L, or the first one in stock.
+// One product, one unit. The customer picks the size; it starts on L, or the first one in stock.
 export default function OrderForm({ product }) {
   const [area, setArea] = useState("inside");
   const [status, setStatus] = useState({ state: "idle" });
+  const [picked, setPicked] = useState(null);
 
-  const size = product && (product.sizes.L ? "L" : SIZES.find((s) => product.sizes[s]));
+  const inStock = product ? SIZES.filter((s) => product.sizes[s]) : [];
+  const size = inStock.includes(picked) ? picked : inStock.includes("L") ? "L" : inStock[0];
   const price = product?.price || 0;
   const delivery = DELIVERY[area].fee;
   const total = price + delivery;
@@ -127,6 +129,42 @@ export default function OrderForm({ product }) {
           <h3 className="text-lg font-bold">ডেলিভারির তথ্য</h3>
 
           <div className="mt-4 space-y-3">
+            {product && (
+              <fieldset>
+                <legend className="text-sm font-medium">সাইজ বাছুন</legend>
+                <div className="mt-1 grid grid-cols-4 gap-2">
+                  {SIZES.map((s) => {
+                    const available = Boolean(product.sizes[s]);
+                    return (
+                      <label
+                        key={s}
+                        className={`relative rounded-lg border-2 py-2.5 text-center text-sm font-bold transition ${
+                          !available
+                            ? "cursor-not-allowed border-neutral-200 text-neutral-300 line-through"
+                            : size === s
+                              ? "cursor-pointer border-black bg-black text-white"
+                              : "cursor-pointer border-neutral-200 hover:border-neutral-400"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="size"
+                          value={s}
+                          checked={size === s}
+                          disabled={!available}
+                          onChange={() => setPicked(s)}
+                          className="sr-only"
+                        />
+                        {s}
+                      </label>
+                    );
+                  })}
+                </div>
+                {inStock.length > 0 && inStock.length < SIZES.length && (
+                  <p className="mt-1 text-xs text-neutral-500">কাটা দাগ দেওয়া সাইজগুলো এখন স্টকে নেই।</p>
+                )}
+              </fieldset>
+            )}
             <Field label="আপনার নাম" name="name" placeholder="পূর্ণ নাম লিখুন" autoComplete="name" />
             <Field
               label="মোবাইল নম্বর"
@@ -176,6 +214,7 @@ export default function OrderForm({ product }) {
           </div>
 
           <div className="mt-5 space-y-2 border-t border-dashed border-neutral-300 pt-4 text-sm">
+            {size && <Row label="সাইজ">{size}</Row>}
             <Row label="পণ্যের মূল্য">{taka(price)}</Row>
             <Row label="ডেলিভারি চার্জ">{taka(delivery)}</Row>
             <div className="flex items-center justify-between border-t border-neutral-200 pt-3 text-base font-bold">
